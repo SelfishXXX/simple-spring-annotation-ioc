@@ -8,4 +8,5 @@ public interface GoodsService {
 
 	void sell(Integer num);
 
+	void login(Long uid);
 }

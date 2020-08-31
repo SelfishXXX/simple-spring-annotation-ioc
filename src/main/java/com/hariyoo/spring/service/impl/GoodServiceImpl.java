@@ -1,5 +1,6 @@
 package com.hariyoo.spring.service.impl;
 
+import com.hariyoo.spring.annotation.Autowired;
 import com.hariyoo.spring.annotation.Component;
 import com.hariyoo.spring.service.GoodsService;
 
@@ -10,7 +11,7 @@ import com.hariyoo.spring.service.GoodsService;
 @Component
 public class GoodServiceImpl implements GoodsService {
 
-//	@Autowired
+	@Autowired
 	private UserServiceImpl userService;
 
 	@Override
@@ -18,6 +19,7 @@ public class GoodServiceImpl implements GoodsService {
 		System.out.println("卖了"+num+"件货");
 	}
 
+	@Override
 	public void login(Long uid) {
 		userService.login(uid);
 	}

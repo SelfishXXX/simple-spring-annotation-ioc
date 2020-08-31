@@ -23,6 +23,7 @@ public class UserServiceImpl implements UserService {
 		return uid;
 	}
 
+	@Override
 	public void sell(Integer num) {
 		goodService.sell(num);
 	}

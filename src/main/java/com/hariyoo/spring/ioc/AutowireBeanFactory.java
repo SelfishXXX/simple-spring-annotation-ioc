@@ -26,22 +26,6 @@ public class AutowireBeanFactory implements BeanFactory {
 		return getBeanMap();
 	}
 
-	public void putBeanMap(String beanName) {
-		BeanProperty beanProperty = new BeanProperty();
-		try {
-			Class<?> clazz = Class.forName(beanName);
-			String simpleName = clazz.getSimpleName();
-			Object bean = clazz.newInstance();
-
-			beanProperty.setFullName(beanName);
-			beanProperty.setClazz(clazz);
-			beanProperty.setSimpleName(simpleName);
-			beanProperty.setBean(bean);
-		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
-			e.printStackTrace();
-		}
-		this.beanMap.put(beanName, beanProperty);
-	}
 
 	@Override
 	public <T> T getBean(Class<T> clazz) {
@@ -70,9 +54,28 @@ public class AutowireBeanFactory implements BeanFactory {
 			}
 		}
 
-		beanList.forEach(n -> injectValue(n));
+//		beanList.forEach(n -> injectValue(n));
+		beanList.forEach(n -> injectValue2(n));
 
 	}
+
+	private void putBeanMap(String beanName) {
+		BeanProperty beanProperty = new BeanProperty();
+		try {
+			Class<?> clazz = Class.forName(beanName);
+			String simpleName = clazz.getSimpleName();
+			Object bean = clazz.newInstance();
+
+			beanProperty.setFullName(beanName);
+			beanProperty.setClazz(clazz);
+			beanProperty.setSimpleName(simpleName);
+			beanProperty.setBean(bean);
+		} catch (ClassNotFoundException | IllegalAccessException | InstantiationException e) {
+			e.printStackTrace();
+		}
+		this.beanMap.put(beanName, beanProperty);
+	}
+
 
 	/**
 	 * 给添加了@Autowired 的属性注入值
@@ -82,7 +85,7 @@ public class AutowireBeanFactory implements BeanFactory {
 	 */
 	private Object injectValue(String beanName) {
 		// TODO: 2020/8/23 循环依赖怎么解决呢？
-		BeanProperty beanProperty = getBean(beanName);
+		BeanProperty beanProperty = getBeanProperty(beanName);
 		Class<?> clazz = beanProperty.getClazz();
 		Object bean = beanProperty.getBean();
 		Field[] declaredFields = clazz.getDeclaredFields();
@@ -109,7 +112,7 @@ public class AutowireBeanFactory implements BeanFactory {
 		return bean;
 	}
 
-	private BeanProperty getBean(String beanName) {
+	private BeanProperty getBeanProperty(String beanName) {
 		BeanProperty beanProperty = beanMap.get(beanName);
 
 		/**
@@ -136,6 +139,29 @@ public class AutowireBeanFactory implements BeanFactory {
 			}
 		}
 		return beanProperty;
+	}
+
+	private void injectValue2(String beanName) {
+		BeanProperty beanProperty = getBeanProperty(beanName);
+		Object bean = beanProperty.getBean();
+		Class<?> clazz = beanProperty.getClazz();
+		Field[] declaredFields = clazz.getDeclaredFields();
+		for (Field declaredField : declaredFields) {
+
+			boolean isAutowiredPresent = declaredField.isAnnotationPresent(Autowired.class);
+			if (!isAutowiredPresent) {
+				continue;
+			}
+			try {
+				declaredField.setAccessible(true);
+				Class<?> fieldType = declaredField.getType();
+				BeanProperty fieldBeanProperty = getBeanProperty(fieldType.getName());
+				declaredField.set(bean, fieldBeanProperty.getBean());
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+
+		}
 	}
 
 }

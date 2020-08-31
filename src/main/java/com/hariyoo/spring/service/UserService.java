@@ -6,4 +6,6 @@ package com.hariyoo.spring.service;
  */
 public interface UserService {
 	Long login(Long uid);
+
+	void sell(Integer num);
 }
